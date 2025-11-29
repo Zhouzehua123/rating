@@ -1,0 +1,19 @@
+server:
+  http:
+    addr: 0.0.0.0:8483
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9493
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:Hdu1080933@tcp(100.89.157.35:13306)/db3?charset=utf8mb4&parseTime=True
+  redis:
+    addr: 100.89.157.35:6380
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+registry:
+  consul:
+    address: 100.89.157.35:8500
+    scheme: http

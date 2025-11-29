@@ -1,0 +1,3 @@
+consul:
+  address: 100.89.157.35:8500
+  scheme: http
