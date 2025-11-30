@@ -158,6 +158,7 @@ func (r *reviewRepo) AppealReview(ctx context.Context, param *biz.AppealParam) (
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: "review_id"}, // ON DUPLICATE KEY
+				
 			},
 			DoUpdates: clause.Assignments(map[string]interface{}{ // UPDATE
 				"status":     appeal.Status,
@@ -165,6 +166,7 @@ func (r *reviewRepo) AppealReview(ctx context.Context, param *biz.AppealParam) (
 				"reason":     appeal.Reason,
 				"pic_info":   appeal.PicInfo,
 				"video_info": appeal.VideoInfo,
+				
 			}),
 		}).
 		Create(appeal) // INSERT

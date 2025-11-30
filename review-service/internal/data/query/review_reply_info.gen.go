@@ -6,6 +6,7 @@ package query
 
 import (
 	"context"
+	"database/sql"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -32,8 +33,8 @@ func newReviewReplyInfo(db *gorm.DB, opts ...gen.DOOption) reviewReplyInfo {
 	_reviewReplyInfo.UpdateBy = field.NewString(tableName, "update_by")
 	_reviewReplyInfo.CreateAt = field.NewTime(tableName, "create_at")
 	_reviewReplyInfo.UpdateAt = field.NewTime(tableName, "update_at")
-	_reviewReplyInfo.DeleteAt = field.NewTime(tableName, "delete_at")
 	_reviewReplyInfo.Version = field.NewInt32(tableName, "version")
+	_reviewReplyInfo.IsDel = field.NewInt32(tableName, "is_del")
 	_reviewReplyInfo.ReplyID = field.NewInt64(tableName, "reply_id")
 	_reviewReplyInfo.ReviewID = field.NewInt64(tableName, "review_id")
 	_reviewReplyInfo.StoreID = field.NewInt64(tableName, "store_id")
@@ -52,21 +53,21 @@ type reviewReplyInfo struct {
 	reviewReplyInfoDo reviewReplyInfoDo
 
 	ALL       field.Asterisk
-	ID        field.Int64  // 主键
-	CreateBy  field.String // 创建方标识
-	UpdateBy  field.String // 更新方标识
-	CreateAt  field.Time   // 创建时间
-	UpdateAt  field.Time   // 更新时间
-	DeleteAt  field.Time   // 逻辑删除标记
-	Version   field.Int32  // 乐观锁标记
-	ReplyID   field.Int64  // 回复id
-	ReviewID  field.Int64  // 评价id
-	StoreID   field.Int64  // 店铺id
-	Content   field.String // 评价内容
-	PicInfo   field.String // 媒体信息：图片
-	VideoInfo field.String // 媒体信息：视频
-	ExtJSON   field.String // 信息扩展
-	CtrlJSON  field.String // 控制扩展
+	ID        field.Int64
+	CreateBy  field.String
+	UpdateBy  field.String
+	CreateAt  field.Time
+	UpdateAt  field.Time
+	Version   field.Int32
+	IsDel     field.Int32 // 01
+	ReplyID   field.Int64 // id
+	ReviewID  field.Int64 // id
+	StoreID   field.Int64 // id
+	Content   field.String
+	PicInfo   field.String
+	VideoInfo field.String
+	ExtJSON   field.String
+	CtrlJSON  field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -88,8 +89,8 @@ func (r *reviewReplyInfo) updateTableName(table string) *reviewReplyInfo {
 	r.UpdateBy = field.NewString(table, "update_by")
 	r.CreateAt = field.NewTime(table, "create_at")
 	r.UpdateAt = field.NewTime(table, "update_at")
-	r.DeleteAt = field.NewTime(table, "delete_at")
 	r.Version = field.NewInt32(table, "version")
+	r.IsDel = field.NewInt32(table, "is_del")
 	r.ReplyID = field.NewInt64(table, "reply_id")
 	r.ReviewID = field.NewInt64(table, "review_id")
 	r.StoreID = field.NewInt64(table, "store_id")
@@ -132,8 +133,8 @@ func (r *reviewReplyInfo) fillFieldMap() {
 	r.fieldMap["update_by"] = r.UpdateBy
 	r.fieldMap["create_at"] = r.CreateAt
 	r.fieldMap["update_at"] = r.UpdateAt
-	r.fieldMap["delete_at"] = r.DeleteAt
 	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_del"] = r.IsDel
 	r.fieldMap["reply_id"] = r.ReplyID
 	r.fieldMap["review_id"] = r.ReviewID
 	r.fieldMap["store_id"] = r.StoreID
@@ -211,6 +212,8 @@ type IReviewReplyInfoDo interface {
 	FirstOrCreate() (*model.ReviewReplyInfo, error)
 	FindByPage(offset int, limit int) (result []*model.ReviewReplyInfo, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
+	Rows() (*sql.Rows, error)
+	Row() *sql.Row
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IReviewReplyInfoDo
 	UnderlyingDB() *gorm.DB

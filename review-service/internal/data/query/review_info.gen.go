@@ -6,6 +6,7 @@ package query
 
 import (
 	"context"
+	"database/sql"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -32,8 +33,8 @@ func newReviewInfo(db *gorm.DB, opts ...gen.DOOption) reviewInfo {
 	_reviewInfo.UpdateBy = field.NewString(tableName, "update_by")
 	_reviewInfo.CreateAt = field.NewTime(tableName, "create_at")
 	_reviewInfo.UpdateAt = field.NewTime(tableName, "update_at")
-	_reviewInfo.DeleteAt = field.NewTime(tableName, "delete_at")
 	_reviewInfo.Version = field.NewInt32(tableName, "version")
+	_reviewInfo.IsDel = field.NewInt32(tableName, "is_del")
 	_reviewInfo.ReviewID = field.NewInt64(tableName, "review_id")
 	_reviewInfo.Content = field.NewString(tableName, "content")
 	_reviewInfo.Score = field.NewInt32(tableName, "score")
@@ -55,9 +56,10 @@ func newReviewInfo(db *gorm.DB, opts ...gen.DOOption) reviewInfo {
 	_reviewInfo.OpReason = field.NewString(tableName, "op_reason")
 	_reviewInfo.OpRemarks = field.NewString(tableName, "op_remarks")
 	_reviewInfo.OpUser = field.NewString(tableName, "op_user")
-	_reviewInfo.GoodsSnapshoot = field.NewString(tableName, "goods_snapshoot")
+	_reviewInfo.GoodsSnapshot = field.NewString(tableName, "goods_snapshot")
 	_reviewInfo.ExtJSON = field.NewString(tableName, "ext_json")
 	_reviewInfo.CtrlJSON = field.NewString(tableName, "ctrl_json")
+	_reviewInfo.DeleteAt = field.NewTime(tableName, "delete_at")
 
 	_reviewInfo.fillFieldMap()
 
@@ -67,38 +69,39 @@ func newReviewInfo(db *gorm.DB, opts ...gen.DOOption) reviewInfo {
 type reviewInfo struct {
 	reviewInfoDo reviewInfoDo
 
-	ALL            field.Asterisk
-	ID             field.Int64  // 主键
-	CreateBy       field.String // 创建方标识
-	UpdateBy       field.String // 更新方标识
-	CreateAt       field.Time   // 创建时间
-	UpdateAt       field.Time   // 更新时间
-	DeleteAt       field.Time   // 逻辑删除标记
-	Version        field.Int32  // 乐观锁标记
-	ReviewID       field.Int64  // 评价id
-	Content        field.String // 评价内容
-	Score          field.Int32  // 评分
-	ServiceScore   field.Int32  // 商家服务评分
-	ExpressScore   field.Int32  // 物流评分
-	HasMedia       field.Int32  // 是否有图或视频
-	OrderID        field.Int64  // 订单id
-	SkuID          field.Int64  // sku id
-	SpuID          field.Int64  // spu id
-	StoreID        field.Int64  // 店铺id
-	UserID         field.Int64  // 用户id
-	Anonymous      field.Int32  // 是否匿名
-	Tags           field.String // 标签json
-	PicInfo        field.String // 媒体信息：图片
-	VideoInfo      field.String // 媒体信息：视频
-	Status         field.Int32  // 状态:10待审核；20审核通过；30审核不通过；40隐藏
-	IsDefault      field.Int32  // 是否默认评价
-	HasReply       field.Int32  // 是否有商家回复:0无;1有
-	OpReason       field.String // 运营审核拒绝原因
-	OpRemarks      field.String // 运营备注
-	OpUser         field.String // 运营者标识
-	GoodsSnapshoot field.String // 商品快照信息
-	ExtJSON        field.String // 信息扩展
-	CtrlJSON       field.String // 控制扩展
+	ALL           field.Asterisk
+	ID            field.Int64
+	CreateBy      field.String
+	UpdateBy      field.String
+	CreateAt      field.Time
+	UpdateAt      field.Time
+	Version       field.Int32
+	IsDel         field.Int32 // 01
+	ReviewID      field.Int64 // id
+	Content       field.String
+	Score         field.Int32
+	ServiceScore  field.Int32
+	ExpressScore  field.Int32
+	HasMedia      field.Int32
+	OrderID       field.Int64 // id
+	SkuID         field.Int64 // sku id
+	SpuID         field.Int64 // spu id
+	StoreID       field.Int64 // id
+	UserID        field.Int64 // id
+	Anonymous     field.Int32
+	Tags          field.String // json
+	PicInfo       field.String
+	VideoInfo     field.String
+	Status        field.Int32 // 10203040
+	IsDefault     field.Int32
+	HasReply      field.Int32 // 01
+	OpReason      field.String
+	OpRemarks     field.String
+	OpUser        field.String
+	GoodsSnapshot field.String
+	ExtJSON       field.String
+	CtrlJSON      field.String
+	DeleteAt      field.Time // 删除时间
 
 	fieldMap map[string]field.Expr
 }
@@ -120,8 +123,8 @@ func (r *reviewInfo) updateTableName(table string) *reviewInfo {
 	r.UpdateBy = field.NewString(table, "update_by")
 	r.CreateAt = field.NewTime(table, "create_at")
 	r.UpdateAt = field.NewTime(table, "update_at")
-	r.DeleteAt = field.NewTime(table, "delete_at")
 	r.Version = field.NewInt32(table, "version")
+	r.IsDel = field.NewInt32(table, "is_del")
 	r.ReviewID = field.NewInt64(table, "review_id")
 	r.Content = field.NewString(table, "content")
 	r.Score = field.NewInt32(table, "score")
@@ -143,9 +146,10 @@ func (r *reviewInfo) updateTableName(table string) *reviewInfo {
 	r.OpReason = field.NewString(table, "op_reason")
 	r.OpRemarks = field.NewString(table, "op_remarks")
 	r.OpUser = field.NewString(table, "op_user")
-	r.GoodsSnapshoot = field.NewString(table, "goods_snapshoot")
+	r.GoodsSnapshot = field.NewString(table, "goods_snapshot")
 	r.ExtJSON = field.NewString(table, "ext_json")
 	r.CtrlJSON = field.NewString(table, "ctrl_json")
+	r.DeleteAt = field.NewTime(table, "delete_at")
 
 	r.fillFieldMap()
 
@@ -172,14 +176,14 @@ func (r *reviewInfo) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *reviewInfo) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 31)
+	r.fieldMap = make(map[string]field.Expr, 32)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["create_by"] = r.CreateBy
 	r.fieldMap["update_by"] = r.UpdateBy
 	r.fieldMap["create_at"] = r.CreateAt
 	r.fieldMap["update_at"] = r.UpdateAt
-	r.fieldMap["delete_at"] = r.DeleteAt
 	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_del"] = r.IsDel
 	r.fieldMap["review_id"] = r.ReviewID
 	r.fieldMap["content"] = r.Content
 	r.fieldMap["score"] = r.Score
@@ -201,9 +205,10 @@ func (r *reviewInfo) fillFieldMap() {
 	r.fieldMap["op_reason"] = r.OpReason
 	r.fieldMap["op_remarks"] = r.OpRemarks
 	r.fieldMap["op_user"] = r.OpUser
-	r.fieldMap["goods_snapshoot"] = r.GoodsSnapshoot
+	r.fieldMap["goods_snapshot"] = r.GoodsSnapshot
 	r.fieldMap["ext_json"] = r.ExtJSON
 	r.fieldMap["ctrl_json"] = r.CtrlJSON
+	r.fieldMap["delete_at"] = r.DeleteAt
 }
 
 func (r reviewInfo) clone(db *gorm.DB) reviewInfo {
@@ -273,6 +278,8 @@ type IReviewInfoDo interface {
 	FirstOrCreate() (*model.ReviewInfo, error)
 	FindByPage(offset int, limit int) (result []*model.ReviewInfo, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
+	Rows() (*sql.Rows, error)
+	Row() *sql.Row
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IReviewInfoDo
 	UnderlyingDB() *gorm.DB
