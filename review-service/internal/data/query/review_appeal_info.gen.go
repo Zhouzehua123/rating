@@ -6,6 +6,7 @@ package query
 
 import (
 	"context"
+	"database/sql"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -32,8 +33,8 @@ func newReviewAppealInfo(db *gorm.DB, opts ...gen.DOOption) reviewAppealInfo {
 	_reviewAppealInfo.UpdateBy = field.NewString(tableName, "update_by")
 	_reviewAppealInfo.CreateAt = field.NewTime(tableName, "create_at")
 	_reviewAppealInfo.UpdateAt = field.NewTime(tableName, "update_at")
-	_reviewAppealInfo.DeleteAt = field.NewTime(tableName, "delete_at")
 	_reviewAppealInfo.Version = field.NewInt32(tableName, "version")
+	_reviewAppealInfo.IsDel = field.NewInt32(tableName, "is_del")
 	_reviewAppealInfo.AppealID = field.NewInt64(tableName, "appeal_id")
 	_reviewAppealInfo.ReviewID = field.NewInt64(tableName, "review_id")
 	_reviewAppealInfo.StoreID = field.NewInt64(tableName, "store_id")
@@ -56,25 +57,25 @@ type reviewAppealInfo struct {
 	reviewAppealInfoDo reviewAppealInfoDo
 
 	ALL       field.Asterisk
-	ID        field.Int64  // 主键
-	CreateBy  field.String // 创建方标识
-	UpdateBy  field.String // 更新方标识
-	CreateAt  field.Time   // 创建时间
-	UpdateAt  field.Time   // 更新时间
-	DeleteAt  field.Time   // 逻辑删除标记
-	Version   field.Int32  // 乐观锁标记
-	AppealID  field.Int64  // 回复id
-	ReviewID  field.Int64  // 评价id
-	StoreID   field.Int64  // 店铺id
-	Status    field.Int32  // 状态:10待审核；20申诉通过；30申诉驳回
-	Reason    field.String // 申诉原因类别
-	Content   field.String // 申诉内容描述
-	PicInfo   field.String // 媒体信息：图片
-	VideoInfo field.String // 媒体信息：视频
-	OpRemarks field.String // 运营备注
-	OpUser    field.String // 运营者标识
-	ExtJSON   field.String // 信息扩展
-	CtrlJSON  field.String // 控制扩展
+	ID        field.Int64
+	CreateBy  field.String
+	UpdateBy  field.String
+	CreateAt  field.Time
+	UpdateAt  field.Time
+	Version   field.Int32
+	IsDel     field.Int32 // 01
+	AppealID  field.Int64 // id
+	ReviewID  field.Int64 // id
+	StoreID   field.Int64 // id
+	Status    field.Int32 // 102030
+	Reason    field.String
+	Content   field.String
+	PicInfo   field.String
+	VideoInfo field.String
+	OpRemarks field.String
+	OpUser    field.String
+	ExtJSON   field.String
+	CtrlJSON  field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -96,8 +97,8 @@ func (r *reviewAppealInfo) updateTableName(table string) *reviewAppealInfo {
 	r.UpdateBy = field.NewString(table, "update_by")
 	r.CreateAt = field.NewTime(table, "create_at")
 	r.UpdateAt = field.NewTime(table, "update_at")
-	r.DeleteAt = field.NewTime(table, "delete_at")
 	r.Version = field.NewInt32(table, "version")
+	r.IsDel = field.NewInt32(table, "is_del")
 	r.AppealID = field.NewInt64(table, "appeal_id")
 	r.ReviewID = field.NewInt64(table, "review_id")
 	r.StoreID = field.NewInt64(table, "store_id")
@@ -144,8 +145,8 @@ func (r *reviewAppealInfo) fillFieldMap() {
 	r.fieldMap["update_by"] = r.UpdateBy
 	r.fieldMap["create_at"] = r.CreateAt
 	r.fieldMap["update_at"] = r.UpdateAt
-	r.fieldMap["delete_at"] = r.DeleteAt
 	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_del"] = r.IsDel
 	r.fieldMap["appeal_id"] = r.AppealID
 	r.fieldMap["review_id"] = r.ReviewID
 	r.fieldMap["store_id"] = r.StoreID
@@ -227,6 +228,8 @@ type IReviewAppealInfoDo interface {
 	FirstOrCreate() (*model.ReviewAppealInfo, error)
 	FindByPage(offset int, limit int) (result []*model.ReviewAppealInfo, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
+	Rows() (*sql.Rows, error)
+	Row() *sql.Row
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IReviewAppealInfoDo
 	UnderlyingDB() *gorm.DB
