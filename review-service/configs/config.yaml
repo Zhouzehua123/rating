@@ -16,3 +16,6 @@ data:
 snowflake:
   start_time: "2025-11-21"
   machine_id: 1
+elasticsearch:
+  addresses:
+    - http://100.89.157.35:9200

@@ -15,14 +15,14 @@ service Business {
     // 商家回复用户评价
     rpc ReplyReview(ReplyReviewRequest)returns (ReplyReviewReply){
         option (google.api.http) = {
-            post: "b/v1/review/reply",
+            post: "/b/v1/review/reply",
             body: "*"
         };
     }
     // 商家申诉用户评价
     rpc AppealReview(AppealReviewRequest)returns (AppealReviewReply){
         option (google.api.http) = {
-            post: "b/v1/review/appeal",
+            post: "/b/v1/review/appeal",
             body: "*"
         };
     }
