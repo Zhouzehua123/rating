@@ -23,7 +23,7 @@ func NewReviewService(uc *biz.ReviewUsecase) *ReviewService {
 func (s *ReviewService) CreateReview(ctx context.Context, req *pb.CreateReviewRequest) (*pb.CreateReviewReply, error) {
 	fmt.Printf("[service] CreateReview, req:%#v\n", req)
 	// 参数转换
-	// 调用biz层
+	// 调用biz层	
 	var anonymous int32
 	if req.Anonymous {
 		anonymous = 1
