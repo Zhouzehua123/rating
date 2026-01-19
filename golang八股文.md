@@ -223,7 +223,6 @@ unsafe.Pointer可以与任意类型的指针相互转换，但是仍然会被GC�
 
 Go 的 `map[Key]Value` 是一种  **无序的键值对集合** 。
 
-
 map 底层的基本数据结构是hmap 和 bmap，
 
 **hmap** ：map 的主要内部结构体，
@@ -286,13 +285,21 @@ Go 的 `map`  **不是线程安全的** 。
 
 写操作会进入这个区。需要 **加锁** 来保证并发安全。
 
-
 另外还有一个计数器 `misses`，
 
 统计从 read 找不到 key 而访问 dirty 的次数。
 
-
 类似redis和mysql的读写分离。
+
+### 20.New、Make的区别
+
+`new` 分配零值内存，返回 `*T`，适用于任意类型；
+
+`make` 只用于 `map/slice/chan`，会初始化内部结构，
+
+返回的是类型本身，所以这三种一般用 make，
+
+否则就是 nil，像 nil map 写会 panic、nil chan 会阻塞。
 
 # Golang底层机制
 
