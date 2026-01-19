@@ -208,10 +208,19 @@ func main() {
 
 unsafe.Pointer可以与任意类型的指针相互转换，但是仍然会被GC跟踪回收
 
-### 14.Go语⾔⾥slice是怎么扩容的
+### 14.slice是怎么扩容的
 
-当原slice容量(oldcap)⼩于256的时候，新slice(newcap)容量为原来的2倍；原slice容量超
-过256，新slice容量newcap = oldcap+(oldcap+3*256)/4
+slice 扩容是 append 超过 cap 触发，
+
+Go 会新分配更大的底层数组并拷贝。
+
+容量增长上，小 cap（<256）基本翻倍，大 cap 会逐渐变成大概 1.25 倍增长
+
+*当原slice容量(oldcap)⼩于256的时候，*
+
+*新slice(newcap)容量为原来的2倍；原slice容量超过256，*
+
+*新slice容量newcap = oldcap+(oldcap+3*256)/4*
 
 ### 15.Map是什么，底层原理是什么
 
