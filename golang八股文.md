@@ -33,11 +33,13 @@
 4.bytes.Buffer
 
 bytes.Buffer是⼀个缓冲类型的缓冲器，这个缓冲器⾥存放着都是byte ，
-bytes.Buffer底层也是⼀个 切⽚。字符串拼接的机制和builder一样。但是他
+bytes.Buffer底层也是⼀个 切⽚。字符串拼接的机制和builder一样。但是他0
 
 可以支持其他的功能。
 
 5.strings.join
+
+...
 
 strings.join也是基于builder来实现的,并且可以⾃定义分隔符，在join⽅法
 内调⽤了b.Grow(n)⽅法，这个是进⾏初步的容量分配，⽽前⾯计算的n的⻓度就是我们要拼
