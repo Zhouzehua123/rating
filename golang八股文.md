@@ -340,6 +340,14 @@ Go 的 `map`  **不是线程安全的** 。
 
 否则就是 nil，像 nil map 写会 panic、nil chan 会阻塞。
 
+`这个是因为像int` 这类基础类型是「原子化的单一结构」，
+
+而 `map/slice/chan` 是「复合结构（带内部依赖）」
+
+ int这种只需要 “分配内存 + 赋零值” 就能用，
+
+`map/slice/chan`这种必须完成「内部子结构的初始化」才能正常工作。
+
 # Golang底层机制
 
 ### 1.Goroutine和线程的区别了解吗
